@@ -7,7 +7,7 @@ def generate_hash(text):
     sha256 = hashlib.sha256(encoded).hexdigest()
     sha512 = hashlib.sha512(encoded).hexdigest()
 
-    print(f"\n🔐 Hashes gerados:")
+    print("🔐 Hashes gerados:")
     print(f"  MD5:    {md5}")
     print(f"  SHA256: {sha256}")
     print(f"  SHA512: {sha512}")
