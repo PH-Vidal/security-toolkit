@@ -33,3 +33,6 @@ docker run --rm security-toolkit python password_checker.py
 docker run --rm security-toolkit python port_scanner.py
 docker run --rm security-toolkit python ping_sweep.py
 ```
+
+## Monitoramento
+Alertas configurados via GitHub Actions + Discord.
