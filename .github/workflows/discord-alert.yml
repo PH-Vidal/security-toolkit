@@ -1,0 +1,45 @@
+name: Discord Alert
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Enviar alerta ao Discord (início)
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d "{
+            \"content\": \"🔔 **Novo evento no repositório!**\n📦 Repo: ${{ github.repository }}\n👤 Autor: ${{ github.actor }}\n🌿 Branch: ${{ github.ref_name }}\n📝 Commit: ${{ github.event.head_commit.message }}\"
+          }" \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      # Aqui você pode adicionar seus steps de build/teste
+      - name: Simular testes
+        run: echo "Rodando testes..."
+
+      - name: Enviar alerta de sucesso ao Discord
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d "{
+            \"content\": \"✅ **Pipeline concluída com SUCESSO!**\n📦 Repo: ${{ github.repository }}\n👤 Autor: ${{ github.actor }}\n🌿 Branch: ${{ github.ref_name }}\"
+          }" \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Enviar alerta de falha ao Discord
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d "{
+            \"content\": \"❌ **Pipeline FALHOU!**\n📦 Repo: ${{ github.repository }}\n👤 Autor: ${{ github.actor }}\n🌿 Branch: ${{ github.ref_name }}\n⚠️ Verifique os logs do GitHub Actions!\"
+          }" \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
