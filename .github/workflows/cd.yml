@@ -1,23 +1,38 @@
-name: CD - Deploy Simulation
+name: CD - Package & Container Verification
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
 
 jobs:
-  deploy:
+  package:
+    name: Build Python Distribution & Verify Container
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.12"
 
-      - name: Simulate deploy
+      - name: Build sdist and wheel
         run: |
-          echo "✅ Deploy realizado com sucesso!"
-          echo "Arquivos no repositório:"
-          ls -la
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-toolkit-dist
+          path: dist/
+
+      - name: Verify production Docker build
+        run: |
+          docker build -t security-toolkit:release .
+          docker run --rm security-toolkit:release --version

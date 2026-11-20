@@ -1,45 +1,62 @@
-name: Discord Alert
+name: Discord Pipeline Alert
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_run:
+    workflows: ["CI - DevSecOps Pipeline"]
+    types:
+      - completed
+
+permissions:
+  contents: read
 
 jobs:
   notify:
+    name: Send Pipeline Notification to Discord
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout do código
-        uses: actions/checkout@v3
-
-      - name: Enviar alerta ao Discord (início)
+      - name: Send sanitized Discord webhook alert
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPO_NAME: ${{ github.repository }}
+          ACTOR: ${{ github.event.workflow_run.actor.login }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          COMMIT_MSG: ${{ github.event.workflow_run.head_commit.message }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -d "{
-            \"content\": \"🔔 **Novo evento no repositório!**\n📦 Repo: ${{ github.repository }}\n👤 Autor: ${{ github.actor }}\n🌿 Branch: ${{ github.ref_name }}\n📝 Commit: ${{ github.event.head_commit.message }}\"
-          }" \
-          ${{ secrets.DISCORD_WEBHOOK_URL }}
+          python3 - <<'EOF'
+          import json
+          import os
+          import urllib.request
 
-      # Aqui você pode adicionar seus steps de build/teste
-      - name: Simular testes
-        run: echo "Rodando testes..."
+          webhook = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
+          if not webhook:
+              print("DISCORD_WEBHOOK_URL secret not configured; skipping alert.")
+              raise SystemExit(0)
 
-      - name: Enviar alerta de sucesso ao Discord
-        if: success()
-        run: |
-          curl -H "Content-Type: application/json" \
-          -d "{
-            \"content\": \"✅ **Pipeline concluída com SUCESSO!**\n📦 Repo: ${{ github.repository }}\n👤 Autor: ${{ github.actor }}\n🌿 Branch: ${{ github.ref_name }}\"
-          }" \
-          ${{ secrets.DISCORD_WEBHOOK_URL }}
+          conclusion = os.environ.get("CONCLUSION", "unknown")
+          status_icon = "✅" if conclusion == "success" else "❌"
+          commit_first_line = os.environ.get("COMMIT_MSG", "").splitlines()[0] if os.environ.get("COMMIT_MSG") else "N/A"
 
-      - name: Enviar alerta de falha ao Discord
-        if: failure()
-        run: |
-          curl -H "Content-Type: application/json" \
-          -d "{
-            \"content\": \"❌ **Pipeline FALHOU!**\n📦 Repo: ${{ github.repository }}\n👤 Autor: ${{ github.actor }}\n🌿 Branch: ${{ github.ref_name }}\n⚠️ Verifique os logs do GitHub Actions!\"
-          }" \
-          ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content = (
+              f"{status_icon} **DevSecOps Pipeline: {conclusion.upper()}**\n"
+              f"📦 Repo: `{os.environ['REPO_NAME']}`\n"
+              f"🌿 Branch: `{os.environ['BRANCH']}`\n"
+              f"👤 Autor: `{os.environ['ACTOR']}`\n"
+              f"📝 Commit: {commit_first_line[:120]}\n"
+              f"🔗 Logs: {os.environ['RUN_URL']}"
+          )
+
+          payload = json.dumps({"content": content}).encode("utf-8")
+          req = urllib.request.Request(
+              webhook,
+              data=payload,
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "SecurityToolkit-CI/2.0",
+              },
+              method="POST",
+          )
+          with urllib.request.urlopen(req, timeout=10) as resp:
+              print(f"Discord alert sent (HTTP {resp.status}).")
+          EOF
