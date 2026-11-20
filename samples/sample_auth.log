@@ -1,0 +1,11 @@
+Nov 19 02:14:01 prod-web-01 sshd[10412]: Failed password for root from 203.0.113.45 port 51234 ssh2
+Nov 19 02:14:03 prod-web-01 sshd[10415]: Failed password for root from 203.0.113.45 port 51238 ssh2
+Nov 19 02:14:05 prod-web-01 sshd[10418]: Failed password for invalid user admin from 203.0.113.45 port 51242 ssh2
+Nov 19 02:14:05 prod-web-01 sshd[10418]: Invalid user admin from 203.0.113.45 port 51242
+Nov 19 02:14:07 prod-web-01 sshd[10421]: Invalid user postgres from 203.0.113.45 port 51247
+Nov 19 02:14:07 prod-web-01 sshd[10421]: Failed password for invalid user postgres from 203.0.113.45 port 51247 ssh2
+Nov 19 02:14:09 prod-web-01 sshd[10424]: Invalid user deploy from 203.0.113.45 port 51251
+Nov 19 02:14:09 prod-web-01 sshd[10424]: Failed password for invalid user deploy from 203.0.113.45 port 51251 ssh2
+Nov 19 02:14:12 prod-web-01 sshd[10429]: Failed password for ubuntu from 203.0.113.45 port 51258 ssh2
+Nov 19 02:14:16 prod-web-01 sshd[10433]: Accepted password for ubuntu from 203.0.113.45 port 51264 ssh2
+Nov 19 02:16:02 prod-web-01 sshd[10501]: Accepted publickey for pedro from 198.51.100.10 port 54011 ssh2
