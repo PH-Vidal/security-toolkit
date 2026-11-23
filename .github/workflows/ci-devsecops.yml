@@ -2,7 +2,7 @@ name: CI - DevSecOps Pipeline
 
 on:
   push:
-    branches: [main, dev, "feat/**"]
+    branches: [main, dev]
   pull_request:
     branches: [main, dev]
 
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy filesystem scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -86,7 +86,7 @@ jobs:
           docker run --rm security-toolkit:ci log-analyze --file /app/samples/sample_auth.log --json
 
       - name: Run Trivy container image scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: security-toolkit:ci
           format: table
