@@ -5,9 +5,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# Install ping utility for network sweep module and remove apt cache
+# Apply OS security patches, install ping utility and remove apt cache
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends iputils-ping \
+    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
 # Create dedicated non-root user
